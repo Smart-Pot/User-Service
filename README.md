@@ -56,6 +56,14 @@ UserPublicData{
         |  Name | Description                           | Type   |
         |:---------:|---------------------------------------|--------|
         | x-auth-token | authentication token of the user  | String |
+    ```js
+    {
+        "email": string,
+        "password": string,
+        "firstName":string,
+        "lastName":string,
+    }
+    ```
 
 - returns:
     ```js
@@ -74,6 +82,16 @@ UserPublicData{
         |  Name | Description                           | Type   |
         |:---------:|---------------------------------------|--------|
         | x-auth-token | authentication token of the user  | String |
+    ```js
+    {
+        "id": string,
+        "email": string,
+        "password": string,
+        "firstName":string,
+        "lastName":string,
+        "image":string,
+    }
+    ```
 - returns:
     ```js
     {
