@@ -12,9 +12,9 @@ import (
 type UserPublicData struct {
 	ID        string `json:"id"`
 	Email     string `json:"email"`
-	FirstName string `json:"name"`
-	LastName  string `json:"surname"`
-	Image     string `json:"images"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Image     string `json:"image"`
 }
 
 type User struct {
