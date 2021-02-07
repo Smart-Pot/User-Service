@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 	"userservice/data"
 
@@ -73,7 +75,18 @@ func (s service) Create(ctx context.Context, newUser data.User) error {
 		return err
 	}
 
-	if err = s.producer.Produce([]byte(h)); err != nil {
+	r := struct {
+		Hash  string `json:"hash"`
+		Email string `json:"email"`
+	}{
+		Hash:  h,
+		Email: newUser.Email,
+	}
+
+	b, err := json.Marshal(r)
+
+	fmt.Println("SENDING", string(b))
+	if err = s.producer.Produce(b); err != nil {
 		return err
 	}
 
