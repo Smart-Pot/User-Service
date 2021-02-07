@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"userservice/config"
+	"github.com/Smart-Pot/pkg"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,7 +17,7 @@ var collection *mongo.Collection
 // DatabaseConnection :
 func DatabaseConnection() {
 	fmt.Println("Connected to Database!")
-	clientOptions := options.Client().ApplyURI(config.C.Database.Addr)
+	clientOptions := options.Client().ApplyURI(pkg.Config.Database.Addr)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -27,7 +27,5 @@ func DatabaseConnection() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	collection = client.Database(config.C.Database.DBName).Collection("users")
-
+	collection = client.Database(pkg.Config.Database.DBName).Collection("users")
 }

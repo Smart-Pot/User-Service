@@ -5,15 +5,23 @@ import (
 	"os"
 	"os/signal"
 	"userservice/cmd"
-	"userservice/config"
 	"userservice/data"
+
+	"github.com/Smart-Pot/pkg"
+	"github.com/Smart-Pot/pkg/adapter/amqp"
 )
 
 func main() {
-	config.ReadConfig()
+	if err := pkg.Config.ReadConfig(); err != nil {
+		log.Fatal(err)
+		return
+	}
 
+	if err := amqp.Set(pkg.Config.AMQPAddress); err != nil {
+		log.Fatal(err)
+		return
+	}
 	data.DatabaseConnection()
-
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)
 	go func() {

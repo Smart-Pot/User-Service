@@ -6,12 +6,15 @@ import (
 	"time"
 	"userservice/data"
 
+	"github.com/Smart-Pot/pkg/adapter/amqp"
+	"github.com/Smart-Pot/pkg/tool/crypto"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )
 
 type service struct {
-	logger log.Logger
+	logger   log.Logger
+	producer amqp.Producer
 }
 
 type Service interface {
@@ -21,9 +24,10 @@ type Service interface {
 	Update(ctx context.Context, userID string, updatedUser data.User) error
 }
 
-func NewService(logger log.Logger) Service {
+func NewService(logger log.Logger, p amqp.Producer) Service {
 	return &service{
-		logger: logger,
+		logger:   logger,
+		producer: p,
 	}
 }
 
@@ -58,7 +62,22 @@ func (s service) Create(ctx context.Context, newUser data.User) error {
 			"param:newComment", newUser,
 			"took", time.Since(beginTime))
 	}(time.Now())
-	return data.CreateUser(ctx, newUser)
+
+	if err := data.CreateUser(ctx, newUser); err != nil {
+		return err
+	}
+
+	// Hash user id for verification mail
+	h, err := crypto.Encrypt(newUser.ID)
+	if err != nil {
+		return err
+	}
+
+	if err = s.producer.Produce([]byte(h)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s service) Update(ctx context.Context, userID string, updatedUser data.User) error {
