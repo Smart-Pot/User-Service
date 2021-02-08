@@ -9,6 +9,7 @@ import (
 
 	"github.com/Smart-Pot/pkg"
 	"github.com/Smart-Pot/pkg/adapter/amqp"
+	_ "github.com/Smart-Pot/pkg/tool/crypto"
 )
 
 func main() {

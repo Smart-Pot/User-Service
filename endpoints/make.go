@@ -7,11 +7,25 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
+func makeVerifyUserEndpoint(s service.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(UserRequest)
+		err := s.Verify(ctx, req.ID)
+
+		response := UserPublicDataResponse{Users: nil, Success: 1, Message: "User Verified"}
+		if err != nil {
+			response.Success = 0
+			response.Message = err.Error()
+		}
+		return response, nil
+	}
+}
+
 func makeGetUsersPublicEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UserPublicDataRequest)
 		result, err := s.GetUsersPublic(ctx, req.IDList)
-		response := UserPublicDataResponse{Users: result, Success: 1, Message: "Public datas found!"}
+		response := UserPublicDataResponse{Users: result, Success: 1, Message: "Public data found!"}
 		if err != nil {
 			response.Success = 0
 			response.Message = err.Error()

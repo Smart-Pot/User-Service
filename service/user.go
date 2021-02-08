@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 	"userservice/data"
 
@@ -24,6 +23,7 @@ type Service interface {
 	Get(ctx context.Context, userID string) (*data.UserPublicData, error)
 	Create(ctx context.Context, newUser data.User) error
 	Update(ctx context.Context, userID string, updatedUser data.User) error
+	Verify(ctx context.Context, hash string) error
 }
 
 func NewService(logger log.Logger, p amqp.Producer) Service {
@@ -65,7 +65,7 @@ func (s service) Create(ctx context.Context, newUser data.User) error {
 			"took", time.Since(beginTime))
 	}(time.Now())
 
-	if err := data.CreateUser(ctx, newUser); err != nil {
+	if err := data.CreateUser(ctx, &newUser); err != nil {
 		return err
 	}
 
@@ -85,7 +85,6 @@ func (s service) Create(ctx context.Context, newUser data.User) error {
 
 	b, err := json.Marshal(r)
 
-	fmt.Println("SENDING", string(b))
 	if err = s.producer.Produce(b); err != nil {
 		return err
 	}
@@ -105,4 +104,15 @@ func (s service) Update(ctx context.Context, userID string, updatedUser data.Use
 		return errors.New("user cannot update for other users")
 	}
 	return data.UpdateUser(ctx, updatedUser)
+}
+
+func (s service) Verify(ctx context.Context, hash string) error {
+	id, err := crypto.Decrypt(hash)
+	if err != nil {
+		return err
+	}
+	if err := data.UpdateUserRecord(ctx, id, "active", true); err != nil {
+		return err
+	}
+	return nil
 }

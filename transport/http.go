@@ -50,6 +50,13 @@ func MakeHTTPHandlers(e endpoints.Endpoints, logger log.Logger) http.Handler {
 		encodeHTTPResponse,
 		options...,
 	))
+
+	r.Methods("GET").Path("/verify/{id}").Handler(httptransport.NewServer(
+		e.Verify,
+		decodeUserHTTPRequest,
+		encodeHTTPResponse,
+		options...,
+	))
 	return r
 }
 
@@ -59,13 +66,9 @@ func encodeHTTPResponse(ctx context.Context, w http.ResponseWriter, response int
 }
 
 func decodeUserHTTPRequest(_ context.Context, r *http.Request) (interface{}, error) {
-
 	vars := mux.Vars(r)
-	id, ok := vars["id"]
+	id, _ := vars["id"]
 
-	if !ok {
-		// Handler error
-	}
 	return endpoints.UserRequest{
 		ID: id,
 	}, nil

@@ -20,7 +20,6 @@ func startServer() error {
 	logger = log.NewJSONLogger(os.Stdout)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
-
 	p, err := amqp.MakeProducer("VerificationMail")
 	if err != nil {
 		return err

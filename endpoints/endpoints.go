@@ -12,6 +12,7 @@ type Endpoints struct {
 	Get            endpoint.Endpoint
 	Create         endpoint.Endpoint
 	Update         endpoint.Endpoint
+	Verify         endpoint.Endpoint
 }
 
 type UserPublicDataResponse struct {
@@ -49,5 +50,6 @@ func MakeEndpoints(s service.Service) Endpoints {
 		Get:            makeGetEndpoint(s),
 		Create:         makeCreateEndpoint(s),
 		Update:         makeUpdateEndpoint(s),
+		Verify:         makeVerifyUserEndpoint(s),
 	}
 }
