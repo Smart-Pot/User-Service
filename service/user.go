@@ -2,15 +2,20 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"time"
 	"userservice/data"
 
 	"github.com/Smart-Pot/pkg/adapter/amqp"
-	"github.com/Smart-Pot/pkg/tool/crypto"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+)
+
+
+var (
+	// ErrNotAuthorized codes returned when user not authorized for a task
+	ErrNotAuthorized = errors.New("User is not authorized")
+	
 )
 
 type service struct {
@@ -21,9 +26,7 @@ type service struct {
 type Service interface {
 	GetUsersPublic(ctx context.Context, userIDList []string) (result []*data.UserPublicData, err error)
 	Get(ctx context.Context, userID string) (*data.UserPublicData, error)
-	Create(ctx context.Context, newUser data.User) error
-	Update(ctx context.Context, userID string, updatedUser data.User) error
-	Verify(ctx context.Context, hash string) error
+	Update(ctx context.Context,  updatedUser data.User) error
 }
 
 func NewService(logger log.Logger, p amqp.Producer) Service {
@@ -57,62 +60,14 @@ func (s service) Get(ctx context.Context, userID string) (result *data.UserPubli
 	return result, err
 }
 
-func (s service) Create(ctx context.Context, newUser data.User) error {
-	defer func(beginTime time.Time) {
-		level.Info(s.logger).Log(
-			"function", "Create",
-			"param:newComment", newUser,
-			"took", time.Since(beginTime))
-	}(time.Now())
 
-	if err := data.CreateUser(ctx, &newUser); err != nil {
-		return err
-	}
-
-	// Hash user id for verification mail
-	h, err := crypto.Encrypt(newUser.ID)
-	if err != nil {
-		return err
-	}
-
-	r := struct {
-		Hash  string `json:"hash"`
-		Email string `json:"email"`
-	}{
-		Hash:  h,
-		Email: newUser.Email,
-	}
-
-	b, err := json.Marshal(r)
-
-	if err = s.producer.Produce(b); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s service) Update(ctx context.Context, userID string, updatedUser data.User) error {
+func (s service) Update(ctx context.Context,  updatedUser data.User) error {
 	defer func(beginTime time.Time) {
 		level.Info(s.logger).Log(
 			"function", "Update",
-			"param:userID", userID,
 			"param:updatedUser", updatedUser,
 			"took", time.Since(beginTime))
 	}(time.Now())
-	if updatedUser.ID != userID {
-		return errors.New("user cannot update for other users")
-	}
 	return data.UpdateUser(ctx, updatedUser)
 }
 
-func (s service) Verify(ctx context.Context, hash string) error {
-	id, err := crypto.Decrypt(hash)
-	if err != nil {
-		return err
-	}
-	if err := data.UpdateUserRecord(ctx, id, "active", true); err != nil {
-		return err
-	}
-	return nil
-}

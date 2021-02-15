@@ -44,19 +44,7 @@ func MakeHTTPHandlers(e endpoints.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-	r.Methods("POST").Path("/create").Handler(httptransport.NewServer(
-		e.Create,
-		decodeNewUserHTTPRequest,
-		encodeHTTPResponse,
-		options...,
-	))
 
-	r.Methods("GET").Path("/verify/{id}").Handler(httptransport.NewServer(
-		e.Verify,
-		decodeUserHTTPRequest,
-		encodeHTTPResponse,
-		options...,
-	))
 	return r
 }
 
@@ -96,16 +84,6 @@ func decodeUpdateUserHTTPRequest(_ context.Context, r *http.Request) (interface{
 	}, nil
 }
 
-func decodeNewUserHTTPRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var newUser data.User
-
-	if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
-		return nil, err
-	}
-	return endpoints.NewUserRequest{
-		NewUser: newUser,
-	}, nil
-}
 
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	if err == nil {

@@ -38,19 +38,8 @@ func startServer() error {
 		WriteTimeout: 10 * time.Second,          // max time to write response to the client
 		IdleTimeout:  120 * time.Second,         // max time for connections using TCP Keep-Alive
 	}
-	if err = startAMQPTransports(logger, service); err != nil {
-		return err
-	}
+
 
 	return s.ListenAndServe()
 }
 
-func startAMQPTransports(l log.Logger, s service.Service) error {
-	ep, err := endpoints.MakeNewUserConsumer()
-	if err != nil {
-		return err
-	}
-	task := transport.MakeNewUserConsumerTask(s, ep, l)
-	go task()
-	return nil
-}

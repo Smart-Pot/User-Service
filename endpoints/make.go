@@ -7,19 +7,6 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-func makeVerifyUserEndpoint(s service.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(UserRequest)
-		err := s.Verify(ctx, req.ID)
-
-		response := UserPublicDataResponse{Users: nil, Success: 1, Message: "User Verified"}
-		if err != nil {
-			response.Success = 0
-			response.Message = err.Error()
-		}
-		return response, nil
-	}
-}
 
 func makeGetUsersPublicEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
@@ -47,23 +34,13 @@ func makeGetEndpoint(s service.Service) endpoint.Endpoint {
 	}
 }
 
-func makeCreateEndpoint(s service.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(NewUserRequest)
-		err := s.Create(ctx, req.NewUser)
-		response := UserResponse{User: nil, Success: 1, Message: "User created!"}
-		if err != nil {
-			response.Success = 0
-			response.Message = err.Error()
-		}
-		return response, nil
-	}
-}
+
 
 func makeUpdateEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateUserRequest)
-		err := s.Update(ctx, req.ID, req.UpdatedUser)
+		req.UpdatedUser.ID = req.ID
+		err := s.Update(ctx,  req.UpdatedUser)
 		response := UserResponse{User: nil, Success: 1, Message: "User updated!"}
 		if err != nil {
 			response.Success = 0
