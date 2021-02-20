@@ -44,6 +44,9 @@ func (s service) GetUsersPublic(ctx context.Context, userIDList []string) (resul
 			"took", time.Since(beginTime))
 	}(time.Now())
 	result, err = data.GetUsersPublicData(ctx, userIDList)
+	if err != nil {
+		return nil,perrors.ErrInternalServer
+	}
 	return result, err
 }
 
