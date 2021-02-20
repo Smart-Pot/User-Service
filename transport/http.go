@@ -7,20 +7,21 @@ import (
 	"userservice/data"
 	"userservice/endpoints"
 
+	"github.com/Smart-Pot/pkg/common/constants"
+	"github.com/Smart-Pot/pkg/common/perrors"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 )
 
-const userIDTag = "x-user-id"
 
 func MakeHTTPHandlers(e endpoints.Endpoints, logger log.Logger) http.Handler {
 	r := mux.NewRouter().PathPrefix("/user").Subrouter()
 
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
-		httptransport.ServerErrorEncoder(encodeError),
+		httptransport.ServerErrorEncoder(perrors.EncodeHTTPError),
 	}
 
 	r.Methods("GET").Path("/single/{id}").Handler(httptransport.NewServer(
@@ -79,19 +80,9 @@ func decodeUpdateUserHTTPRequest(_ context.Context, r *http.Request) (interface{
 	}
 
 	return endpoints.UpdateUserRequest{
-		ID:          r.Header.Get(userIDTag),
+		ID:          r.Header.Get(constants.UserIDHeaderKey),
 		UpdatedUser: updatedUser,
 	}, nil
 }
 
 
-func encodeError(_ context.Context, err error, w http.ResponseWriter) {
-	if err == nil {
-		panic("encodeError with nil error")
-	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error": err.Error(),
-	})
-}

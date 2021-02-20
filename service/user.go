@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 	"userservice/data"
 
 	"github.com/Smart-Pot/pkg/adapter/amqp"
+	"github.com/Smart-Pot/pkg/common/perrors"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 )
@@ -14,8 +14,7 @@ import (
 
 var (
 	// ErrNotAuthorized codes returned when user not authorized for a task
-	ErrNotAuthorized = errors.New("User is not authorized")
-	
+	ErrNotAuthorized = perrors.New("User is not authorized",401)
 )
 
 type service struct {
@@ -54,20 +53,30 @@ func (s service) Get(ctx context.Context, userID string) (result *data.UserPubli
 			"function", "Get",
 			"param:userID", userID,
 			"result", result,
+			"err", err,
 			"took", time.Since(beginTime))
 	}(time.Now())
 	result, err = data.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, perrors.ErrInternalServer
+	}
 	return result, err
 }
 
 
 func (s service) Update(ctx context.Context,  updatedUser data.User) error {
+	var err error
 	defer func(beginTime time.Time) {
 		level.Info(s.logger).Log(
 			"function", "Update",
 			"param:updatedUser", updatedUser,
+			"result:err", err,
 			"took", time.Since(beginTime))
 	}(time.Now())
-	return data.UpdateUser(ctx, updatedUser)
+	err = data.UpdateUser(ctx, updatedUser)
+	if err != nil {
+		return perrors.ErrInternalServer
+	}
+	return nil
 }
 
