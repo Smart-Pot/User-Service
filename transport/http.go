@@ -8,13 +8,13 @@ import (
 	"userservice/endpoints"
 
 	"github.com/Smart-Pot/pkg/common/constants"
+	pkghttp "github.com/Smart-Pot/pkg/common/http"
 	"github.com/Smart-Pot/pkg/common/perrors"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 )
-
 
 func MakeHTTPHandlers(e endpoints.Endpoints, logger log.Logger) http.Handler {
 	r := mux.NewRouter().PathPrefix("/user").Subrouter()
@@ -45,8 +45,7 @@ func MakeHTTPHandlers(e endpoints.Endpoints, logger log.Logger) http.Handler {
 		options...,
 	))
 
-
-	return r
+	return pkghttp.EnableCORS(r)
 }
 
 func encodeHTTPResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
@@ -84,5 +83,3 @@ func decodeUpdateUserHTTPRequest(_ context.Context, r *http.Request) (interface{
 		UpdatedUser: updatedUser,
 	}, nil
 }
-
-
