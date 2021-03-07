@@ -6,3 +6,4 @@ Database:
   DBName: smart-pot
 Server:
   Address: :8000
+AMQPAddress: amqp://guest:guest@rabbitmq:5672

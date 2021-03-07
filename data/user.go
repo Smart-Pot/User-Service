@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/Smart-Pot/pkg/db"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -27,28 +28,26 @@ type User struct {
 	Active        bool     `json:"active"`
 	Authorization int      `json:"authorization"`
 	Devices       []string `json:"devices"`
-	OAuth 		  bool     `json:"oauth"`	
+	OAuth         bool     `json:"oauth"`
 }
 
 func generateID() string {
 	return uuid.NewString()
 }
 
-
-
 func UpdateUser(ctx context.Context, user User) error {
 	filter := bson.M{"id": user.ID}
 
 	updateUser := bson.M{"$set": bson.M{
-		"password":     user.Password,
-		"firstname":    user.FirstName,
-		"lastname":     user.LastName,
-		"image":        user.Image,
-		"active":       user.Active,
+		"password":      user.Password,
+		"firstname":     user.FirstName,
+		"lastname":      user.LastName,
+		"image":         user.Image,
+		"active":        user.Active,
 		"authorization": user.Authorization,
 	}}
 
-	res, err := collection.UpdateOne(ctx, filter, updateUser)
+	res, err := db.Collection().UpdateOne(ctx, filter, updateUser)
 	if err != nil {
 		return err
 	}
@@ -67,7 +66,7 @@ func UpdateUserRecord(ctx context.Context, id, key string, value interface{}) er
 		key: value,
 	}}
 
-	res, err := collection.UpdateOne(ctx, filter, updateUser)
+	res, err := db.Collection().UpdateOne(ctx, filter, updateUser)
 
 	if res.ModifiedCount <= 0 {
 		return errors.New("record can not updated")
@@ -82,7 +81,7 @@ func UpdateUserRecord(ctx context.Context, id, key string, value interface{}) er
 
 func GetUsersPublicData(ctx context.Context, userIDList []string) ([]*UserPublicData, error) {
 	var results []*UserPublicData
-	cur, err := collection.Find(ctx, bson.M{"id": bson.M{"$in": userIDList}})
+	cur, err := db.Collection().Find(ctx, bson.M{"id": bson.M{"$in": userIDList}})
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +106,7 @@ func GetUsersPublicData(ctx context.Context, userIDList []string) ([]*UserPublic
 }
 
 func GetUserByID(ctx context.Context, id string) (*UserPublicData, error) {
-	res := collection.FindOne(ctx, bson.M{"id": id})
+	res := db.Collection().FindOne(ctx, bson.M{"id": id})
 	var u UserPublicData
 	if err := res.Decode(&u); err != nil {
 		return nil, err

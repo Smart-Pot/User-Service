@@ -5,24 +5,28 @@ import (
 	"os"
 	"os/signal"
 	"userservice/cmd"
-	"userservice/data"
 
 	"github.com/Smart-Pot/pkg"
 	"github.com/Smart-Pot/pkg/adapter/amqp"
+	"github.com/Smart-Pot/pkg/db"
 	_ "github.com/Smart-Pot/pkg/tool/crypto"
 )
 
 func main() {
 	if err := pkg.Config.ReadConfig(); err != nil {
 		log.Fatal(err)
-		return
 	}
+	log.Println("Configurations are set")
+	if err := db.Connect(db.PkgConfig("users")); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("DB Connection established")
 
 	if err := amqp.Set(pkg.Config.AMQPAddress); err != nil {
 		log.Fatal(err)
-		return
 	}
-	data.DatabaseConnection()
+	log.Println("AMQP module is set")
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)
 	go func() {

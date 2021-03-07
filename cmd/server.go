@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	logg "log"
 	"net/http"
 	"os"
@@ -28,6 +29,8 @@ func startServer() error {
 	endpoint := endpoints.MakeEndpoints(service)
 	handler := transport.MakeHTTPHandlers(endpoint, logger)
 
+	fmt.Println("HELLO", pkg.Config.Server.Address)
+
 	l := logg.New(os.Stdout, "USER-SERVICE", 0)
 	// Set handler and listen given port
 	s := http.Server{
@@ -39,7 +42,5 @@ func startServer() error {
 		IdleTimeout:  120 * time.Second,         // max time for connections using TCP Keep-Alive
 	}
 
-
 	return s.ListenAndServe()
 }
-
