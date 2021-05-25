@@ -3,7 +3,7 @@ module userservice
 go 1.15
 
 require (
-	github.com/Smart-Pot/pkg v0.0.0-20210525104235-1f23a5cfa06d // indirect
+	github.com/Smart-Pot/pkg v0.0.0-20210525111911-dc18a3996826
 	github.com/aws/aws-sdk-go v1.37.6 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-kit/kit v0.10.0
